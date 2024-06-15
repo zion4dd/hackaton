@@ -30,11 +30,13 @@ def dist(a, b):
     return abs(((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** (1 / 2))
 
 
-def save_frame(np_arr):
+def save_frame(np_arr) -> tuple:
     img = Image.fromarray(np_arr, "RGB")
-    filepath = current_directory + f"\\frames\\frame_{str(int(time()))}.png"
+    datetime = int(time())
+    filename = f"frame_{datetime}.png"
+    filepath = current_directory + "\\frames\\" + filename
     img.save(filepath)
-    return filepath
+    return filename, datetime
 
 
 def forFrame(frame_number, output_array, output_count: dict, frame_detected=None):
@@ -69,13 +71,14 @@ def forFrame(frame_number, output_array, output_count: dict, frame_detected=None
 
     # if output_count.get('stop sign', 0) > 0:
     #     exit()
-    frame_url = save_frame(frame_detected)
+    frame_url, datetime = save_frame(frame_detected)
 
     data = Data(
         frame_number=frame_number,
         person_count=person_count,
         heap=heap,
         frame_url=frame_url,
+        datetime=datetime,
     )
     print(f"{data=}")
 

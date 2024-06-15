@@ -30,5 +30,5 @@ def create_all():
     Base.metadata.create_all(bind=engine)
 
 
-# drop_all()
-# create_all()
+drop_all()
+create_all()
