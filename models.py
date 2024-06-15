@@ -19,6 +19,7 @@ class Data(Base):
     person_count: Mapped[int]
     heap: Mapped[int]
     frame_url: Mapped[str]
+    datetime: Mapped[int]
 
 
 def drop_all():
