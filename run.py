@@ -2,18 +2,16 @@ import os
 from time import time
 
 import cv2
-
-# import numpy as np
 from imageai.Detection import VideoObjectDetection
 from PIL import Image
 
+from config import settings
 from database import session_
 from models import Data
 
-camera = cv2.VideoCapture(0)
-
-filename = "web_" + str(int(time()))
-
+# detection set
+detection_timeout = settings.detection_timeout
+heap_distance = settings.heap_distance
 objectdict = {
     "person": True,
     "truck": True,
@@ -23,15 +21,16 @@ objectdict = {
     # "stop_sign": True,
 }
 
+model = settings.ImageAImodel
+filename = "web_" + str(int(time()))
+camera = cv2.VideoCapture(0)
+
 
 def dist(a, b):
     return abs(((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** (1 / 2))
 
 
 def save_frame(np_arr):
-    # w, h = 512, 512
-    # data = np.zeros((h, w, 3), dtype=np.uint8)
-    # data[0:256, 0:256] = [255, 0, 0] # red patch in upper left
     img = Image.fromarray(np_arr, "RGB")
     filepath = current_directory + f"/frames/frame_{str(int(time()))}.png"
     img.save(filepath)
@@ -63,7 +62,7 @@ def forFrame(frame_number, output_array, output_count: dict, frame_detected=None
             p2xy = p2[0], p2[1]
             d = dist(p1xy, p2xy)
             print(f"{d=}")
-            if d < 200:
+            if d < heap_distance:
                 heap += 1
 
     print(heap)
@@ -90,13 +89,12 @@ print(current_directory)
 
 detector = VideoObjectDetection()
 
-detector.setModelTypeAsRetinaNet()
-m = "retinanet_resnet50_fpn_coco-eeacb38b.pth"
+if model == "retinanet_resnet50_fpn_coco-eeacb38b.pth":
+    detector.setModelTypeAsRetinaNet()
+elif model == "yolov3.pt":
+    detector.setModelTypeAsYOLOv3()
 
-# detector.setModelTypeAsYOLOv3()
-# m = "yolov3.pt"
-
-detector.setModelPath(os.path.join(current_directory + "/models", m))
+detector.setModelPath(os.path.join(current_directory + "/models", model))
 detector.loadModel()
 detector.useCPU()
 
@@ -112,8 +110,19 @@ detector = detector.detectObjectsFromVideo(
     minimum_percentage_probability=70,
     per_frame_function=forFrame,
     # per_second_function=forSeconds,
-    detection_timeout=5,
+    detection_timeout=detection_timeout,
     display_percentage_probability=False,
     display_object_name=False,
     return_detected_frame=True,
 )
+
+
+# import numpy as np
+# def sample():
+#     w, h = 512, 512
+#     data = np.zeros((h, w, 3), dtype=np.uint8)
+#     data[0:256, 0:256] = [255, 0, 0] # red patch in upper left
+#     img = Image.fromarray(data)
+#     filepath = current_directory + f"/frames/frame_{str(int(time()))}.png"
+#     img.save(filepath)
+#     return filepath
