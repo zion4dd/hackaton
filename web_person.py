@@ -2,7 +2,13 @@ import os
 from time import time
 
 import cv2
+
+# import numpy as np
 from imageai.Detection import VideoObjectDetection
+from PIL import Image
+
+from database import session_
+from models import Data
 
 camera = cv2.VideoCapture(0)
 
@@ -11,8 +17,8 @@ filename = "web_" + str(int(time()))
 objectdict = {
     "person": True,
     "truck": True,
+    "hat": True,
     # "car": True,
-    # "hat": True,
     # "chair": True,
     # "stop_sign": True,
 }
@@ -22,9 +28,23 @@ def dist(a, b):
     return abs(((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** (1 / 2))
 
 
-def forFrame(frame_number, output_array, output_count: dict):
+def save_frame(np_arr):
+    # w, h = 512, 512
+    # data = np.zeros((h, w, 3), dtype=np.uint8)
+    # data[0:256, 0:256] = [255, 0, 0] # red patch in upper left
+    img = Image.fromarray(np_arr, "RGB")
+    filepath = current_directory + f"/frames/frame_{str(int(time()))}.png"
+    img.save(filepath)
+    return filepath
+
+
+def forFrame(frame_number, output_array, output_count: dict, frame_detected=None):
+    person_count = output_count.get("person", 0)
+    truck_count = output_count.get("truck", 0)
+    hat_count = output_count.get("hat", 0)
+
     print(
-        f"FRAME: {frame_number} PERSON: {output_count.get('person', 0)} TRUCK: {output_count.get('truck', 0)}"
+        f"FRAME: {frame_number} PERSON: {person_count} TRUCK: {truck_count} HAT: {hat_count}"
     )
     print(f"{output_array=}")
 
@@ -35,7 +55,7 @@ def forFrame(frame_number, output_array, output_count: dict):
     ]
     print(f"{person_list=}")
 
-    heap = 0
+    heap = 1
     while len(person_list) > 1:
         p1 = person_list.pop()
         for p2 in person_list:
@@ -46,10 +66,23 @@ def forFrame(frame_number, output_array, output_count: dict):
             if d < 200:
                 heap += 1
 
-    print(heap + 1)
+    print(heap)
 
     # if output_count.get('stop sign', 0) > 0:
     #     exit()
+    frame_url = save_frame(frame_detected)
+
+    data = Data(
+        frame_number=frame_number,
+        person_count=person_count,
+        heap=heap,
+        frame_url=frame_url,
+    )
+    print(f"{data=}")
+
+    with session_() as session:
+        session.add(data)
+        session.commit()
 
 
 current_directory = os.getcwd()
@@ -59,6 +92,7 @@ detector = VideoObjectDetection()
 
 detector.setModelTypeAsRetinaNet()
 m = "retinanet_resnet50_fpn_coco-eeacb38b.pth"
+
 # detector.setModelTypeAsYOLOv3()
 # m = "yolov3.pt"
 
@@ -72,21 +106,14 @@ detector = detector.detectObjectsFromVideo(
     camera_input=camera,
     custom_objects=custom,
     output_file_path=os.path.join(current_directory + "/web", filename),
-    frames_per_second=25,
-    frame_detection_interval=25,  # 5
+    frames_per_second=20,
+    frame_detection_interval=20,
     # log_progress=True,
     minimum_percentage_probability=70,
     per_frame_function=forFrame,
     # per_second_function=forSeconds,
-    detection_timeout=4,
-    # display_percentage_probability=False,
-    # display_object_name=False,
+    detection_timeout=5,
+    display_percentage_probability=False,
+    display_object_name=False,
+    return_detected_frame=True,
 )
-
-
-"""
-FRAME: 225 PERSON: 1
-[{'name': 'person', 'percentage_probability': 96.65, 'box_points': [68, 150, 627, 470]}]
-FRAME: 250 PERSON: 1
-[{'name': 'person', 'percentage_probability': 95.89, 'box_points': [77, 125, 618, 470]}]
-"""
