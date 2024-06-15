@@ -32,7 +32,7 @@ def dist(a, b):
 
 def save_frame(np_arr):
     img = Image.fromarray(np_arr, "RGB")
-    filepath = current_directory + f"/frames/frame_{str(int(time()))}.png"
+    filepath = current_directory + f"\\frames\\frame_{str(int(time()))}.png"
     img.save(filepath)
     return filepath
 
@@ -94,7 +94,7 @@ if model == "retinanet_resnet50_fpn_coco-eeacb38b.pth":
 elif model == "yolov3.pt":
     detector.setModelTypeAsYOLOv3()
 
-detector.setModelPath(os.path.join(current_directory + "/models", model))
+detector.setModelPath(os.path.join(current_directory + "\\models", model))
 detector.loadModel()
 detector.useCPU()
 
@@ -103,7 +103,7 @@ custom = detector.CustomObjects(**objectdict)
 detector = detector.detectObjectsFromVideo(
     camera_input=camera,
     custom_objects=custom,
-    output_file_path=os.path.join(current_directory + "/web", filename),
+    output_file_path=os.path.join(current_directory + "\\web", filename),
     frames_per_second=20,
     frame_detection_interval=20,
     # log_progress=True,
@@ -123,6 +123,6 @@ detector = detector.detectObjectsFromVideo(
 #     data = np.zeros((h, w, 3), dtype=np.uint8)
 #     data[0:256, 0:256] = [255, 0, 0] # red patch in upper left
 #     img = Image.fromarray(data)
-#     filepath = current_directory + f"/frames/frame_{str(int(time()))}.png"
+#     filepath = current_directory + f"\\frames\\frame_{str(int(time()))}.png"
 #     img.save(filepath)
 #     return filepath

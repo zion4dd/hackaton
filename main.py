@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from sqlalchemy import select
 
@@ -21,3 +22,7 @@ def read_item(q: int | None = None):
         print(res)
 
     return res
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
