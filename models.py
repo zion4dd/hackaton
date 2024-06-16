@@ -21,6 +21,13 @@ class Data(Base):
     frame_url: Mapped[str]
     datetime: Mapped[int]
 
+class FireBase(Base):
+    __tablename__ = "firebase"
+
+    id: Mapped[intpk]
+    name: Mapped[str]
+    token: Mapped[str]
+
 
 def drop_all():
     Base.metadata.drop_all(bind=engine)
@@ -30,5 +37,5 @@ def create_all():
     Base.metadata.create_all(bind=engine)
 
 
-drop_all()
-create_all()
+# drop_all()
+# create_all()

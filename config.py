@@ -11,8 +11,9 @@ class Settings(BaseSettings):
     DB_NAME: str
 
     ImageAImodel: str
-    detection_timeout: int
-    heap_distance: int
+
+    FBTOKEN: str
+    FBConsumer: str = "serg"
 
     @property
     def DB_URL_psycopg(self):
